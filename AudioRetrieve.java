@@ -24,6 +24,7 @@ public class AudioRetrieve {
 		dialog.setTitle("Select Synthesizer Setting");
 		dialog.setHeaderText("Select Synthesizer Setting [Voice type]");
 		dialog.setContentText("Choose the type of voice: ");
+		dialog.getDialogPane().getStylesheets().add(AudioRetrieve.class.getResource("alert.css").toExternalForm());
 
 		Optional<String> result = dialog.showAndWait();
 		if (result.isPresent()){
@@ -39,6 +40,7 @@ public class AudioRetrieve {
 		Alert highlightError = new Alert(Alert.AlertType.ERROR);
 		highlightError.setTitle("Please select text");
 		highlightError.setContentText("Please highlight text.");
+		highlightError.getDialogPane().getStylesheets().add(AudioRetrieve.class.getResource("alert.css").toExternalForm());
 		highlightError.showAndWait();
 		return;
 	}
@@ -48,16 +50,13 @@ public class AudioRetrieve {
 		Alert highlightError = new Alert(Alert.AlertType.ERROR);
 		highlightError.setTitle("Please select less number of words");
 		highlightError.setContentText("Number of words cannot exceed 20.");
+		highlightError.getDialogPane().getStylesheets().add(AudioRetrieve.class.getResource("alert.css").toExternalForm());
 		highlightError.showAndWait();
 		return;
 	}
 
 
-<<<<<<< HEAD
 	static void saveTextToAudio(String text, boolean preview, boolean popup) throws Exception {
-=======
-	static void saveTextToAudio(String text, boolean preview, boolean popup) {
->>>>>>> eea9d29aa4c59c2de8fdd7e04d931145743b612b
 		int wc = text.split(" ").length;
 
 		//If word count exceeds max, show error
@@ -71,12 +70,9 @@ public class AudioRetrieve {
 		if(voice == null) {
 			return;
 		}
-<<<<<<< HEAD
 		if(voice.equals("cancelled")) {
 			throw new Exception();
 		}
-=======
->>>>>>> eea9d29aa4c59c2de8fdd7e04d931145743b612b
 
 		//replace newline with a space
 		text = text.replace("\n", " ");
@@ -104,6 +100,7 @@ public class AudioRetrieve {
 			dialog.setTitle("Name of the audio");
 			dialog.setHeaderText("Naming a new audio!");
 			dialog.setContentText("Please enter the name of the audio:");
+			dialog.getDialogPane().getStylesheets().add(AudioRetrieve.class.getResource("alert.css").toExternalForm());
 
 			Optional<String> result = dialog.showAndWait();
 			if (result.isPresent()){
@@ -160,6 +157,7 @@ public class AudioRetrieve {
 		Alert audioSaved = new Alert(Alert.AlertType.INFORMATION);
 		audioSaved.setTitle("Audio Successfully saved");
 		audioSaved.setContentText(audioName + " is successfully saved. The audio will play");
+		audioSaved.getDialogPane().getStylesheets().add(AudioRetrieve.class.getResource("alert.css").toExternalForm());
 		audioSaved.showAndWait();
 		return;
 

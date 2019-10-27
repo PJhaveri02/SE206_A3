@@ -10,6 +10,10 @@ import com.flickr4java.flickr.photos.*;
 
 import javafx.scene.control.Alert;
 
+/*
+ * This class retrieves the images specified by the user from the web site Flickr.
+ * It ensures to get the number of images specified by the user (between and including 1-10 images).
+ */
 public class FlickrGetImages {
 	String _image;
 	int _numberOfImages;
@@ -45,6 +49,7 @@ public class FlickrGetImages {
 				Alert invalidSearchAlert = new Alert(Alert.AlertType.ERROR);
 				invalidSearchAlert.setTitle("Invalid Search");
 				invalidSearchAlert.setContentText("Please try again");
+				invalidSearchAlert.getDialogPane().getStylesheets().add(FlickrGetImages.class.getResource("alert.css").toExternalForm());
 				invalidSearchAlert.showAndWait();
 				return "ERROR";
 			}
@@ -64,7 +69,6 @@ public class FlickrGetImages {
 			params.setText(query);
 
 			PhotoList<Photo> results = photos.search(params, resultsPerPage, page);
-			//System.out.println("Retrieving " + results.size()+ " results");
 
 			ProcessBuilder folderOfImages = new ProcessBuilder("bash", "-c", "if [ ! -e \"" + query + "\" ]; then mkdir \"" + query + 
 					"\"; else rm -v ./" + query + "/* &> /dev/null;fi");
@@ -77,16 +81,16 @@ public class FlickrGetImages {
 					String filename = query.trim().replace(' ', '-')+"-"+System.currentTimeMillis()+"-"+photo.getId()+".jpg";
 					File outputfile = new File("./" + query,filename);
 					ImageIO.write(image, "jpg", outputfile);
-					ProcessBuilder changeRatio = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ./" + query + "/" + filename + " -vf scale=320:240 ./" + query + "/output" + num + ".jpg;"
+					ProcessBuilder changeRatio = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ./" + query + "/" + filename + " -vf scale=800:200 ./" + query + "/output" + num + ".jpg;"
 							+ "rm \"./" + query + "/" + filename + "\"");
 					Process process = changeRatio.start();
 					int exitStatus = process.waitFor();
 					num++;
-					//System.out.println("Downloaded "+filename);
 				} catch (FlickrException fe) {
 					Alert invalidSearchAlert = new Alert(Alert.AlertType.ERROR);
 					invalidSearchAlert.setTitle("Invalid Search");
 					invalidSearchAlert.setContentText("Please try again");
+					invalidSearchAlert.getDialogPane().getStylesheets().add(FlickrGetImages.class.getResource("alert.css").toExternalForm());
 					invalidSearchAlert.showAndWait();
 					return "ERROR";
 				}
@@ -97,6 +101,7 @@ public class FlickrGetImages {
 				Alert invalidSearchAlert = new Alert(Alert.AlertType.ERROR);
 				invalidSearchAlert.setTitle("Invalid Search");
 				invalidSearchAlert.setContentText("Please try again");
+				invalidSearchAlert.getDialogPane().getStylesheets().add(FlickrGetImages.class.getResource("alert.css").toExternalForm());
 				invalidSearchAlert.showAndWait();
 				return "ERROR";
 			} else {
@@ -106,6 +111,7 @@ public class FlickrGetImages {
 			Alert invalidSearchAlert = new Alert(Alert.AlertType.ERROR);
 			invalidSearchAlert.setTitle("Invalid Search");
 			invalidSearchAlert.setContentText("Please try again");
+			invalidSearchAlert.getDialogPane().getStylesheets().add(FlickrGetImages.class.getResource("alert.css").toExternalForm());
 			invalidSearchAlert.showAndWait();
 			return "ERROR";
 		}

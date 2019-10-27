@@ -11,12 +11,19 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.TextInputDialog;
 
+/*
+ * This class is the runnable class that creates a new creation whether it is the merging of audio files
+ * or a searched term from Wikipedia
+ */
+
+
 public class AudioMergePaper implements Runnable{
-	String _task;
-	String[] _audioFiles;
-	String exitType;
-	String _creationName;
-	Boolean merge = true;
+	private String _task;
+	private String[] _audioFiles;
+	private String exitType;
+	private String _creationName;
+	private Boolean merge = true;
+	private String images = "";
 
 	public AudioMergePaper(String task) {
 		this._task = task;
@@ -33,12 +40,13 @@ public class AudioMergePaper implements Runnable{
 	}
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		// Asking user for details regarding the creating of a new creation
 		try {
 			if (_task.equals("ERROR")) {
 				Alert invalidSearchAlert = new Alert(Alert.AlertType.ERROR);
 				invalidSearchAlert.setTitle("Invalid Word");
 				invalidSearchAlert.setContentText("Please try again");
+				invalidSearchAlert.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 				invalidSearchAlert.showAndWait();
 				return;
 			} else if (_task.equals("Ask user for creation name")) {
@@ -46,6 +54,7 @@ public class AudioMergePaper implements Runnable{
 				dialog.setTitle("Name of creation");
 				dialog.setHeaderText("Naming a new creation!");
 				dialog.setContentText("Please enter the name of creation:");
+				dialog.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 
 				Optional<String> result = dialog.showAndWait();
 				if (result.isPresent()){
@@ -57,6 +66,7 @@ public class AudioMergePaper implements Runnable{
 								Alert invalidSearchAlert = new Alert(Alert.AlertType.ERROR);
 								invalidSearchAlert.setTitle("Invalid Word");
 								invalidSearchAlert.setContentText("Please enter another name");
+								invalidSearchAlert.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 								invalidSearchAlert.showAndWait();
 								br.close();
 								return;
@@ -81,6 +91,7 @@ public class AudioMergePaper implements Runnable{
 				dialog.setTitle("Creation Images");
 				dialog.setHeaderText("Creation Images");
 				dialog.setContentText("Choose the number of images for the creation:");
+				dialog.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 
 				Optional<String> result = dialog.showAndWait();
 				if (result.isPresent()){
@@ -89,8 +100,10 @@ public class AudioMergePaper implements Runnable{
 					dialog2.setTitle("Images of creation");
 					dialog2.setHeaderText("Images of creation");
 					dialog2.setContentText("Please enter the images you would like for the creation:");
+					dialog2.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 					Optional<String> result2 = dialog2.showAndWait();
 					if (result2.isPresent()){
+						images = result2.get();
 						FlickrGetImages test = new FlickrGetImages(result2.get(), Integer.parseInt(result.get()));
 						exitType = test.retrieveImages();
 					}
@@ -128,7 +141,7 @@ public class AudioMergePaper implements Runnable{
 							numberOfImages++;
 						}
 
-						stuff(numberOfImages, result2);
+						mergeAudioNewCreation(numberOfImages, result2);
 					} else {
 						ProcessBuilder numberOfImagesFrameRate = new ProcessBuilder("/bin/bash", "-c", "ls ./" + result2.get());
 						Process process = numberOfImagesFrameRate.start();
@@ -151,8 +164,14 @@ public class AudioMergePaper implements Runnable{
 		}
 
 	}
-
-	public void stuff(int numberOfImages, Optional<String> result2) {
+	
+	/**
+	 * The following method is created of the merging of audio files decided by the user
+	 * and then used to create a new creation where the images come from Flickr
+	 * @param numberOfImages
+	 * @param result2
+	 */
+	public void mergeAudioNewCreation(int numberOfImages, Optional<String> result2) {
 		// Getting duration of audio File
 		try {
 			ProcessBuilder timeOfAudio = new ProcessBuilder("/bin/bash", "-c", "echo `soxi -D output.wav`");
@@ -171,20 +190,23 @@ public class AudioMergePaper implements Runnable{
 			int exit1 = pb1.waitFor();
 
 			ProcessBuilder removeAndMoveFiles = new ProcessBuilder("/bin/bash", "-c", "mv \"" + _creationName + ".mp4\" \"./creations\""
-					+ ";rm \"output.wav\" \"output.mp4\";echo \"" + _creationName + "\" >> \"nameOfCreations.txt\"");
+					+ ";rm \"output.wav\" \"output.mp4\";echo \"" + _creationName + "\" >> \"nameOfCreations.txt\";"
+							+ "cp \"./creations/" + _creationName + ".mp4\" \"./creationsNoText\"");
 			Process pb2 = removeAndMoveFiles.start();
 			int exit2 = pb2.waitFor();
 			
 			
 			ProcessBuilder addTextToVideo = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ./creations/" + _creationName + ".mp4 "
-					+ "-vf drawtext=\"fontfile=/path/to/font.ttf: text=\'" + _creationName + "\': fontcolor=white: fontsize=18: box=1: boxcolor=black@0.5:"
+					+ "-vf drawtext=\"fontfile=/path/to/font.ttf: text=\'" + images + "\': fontcolor=white: fontsize=18: box=1: boxcolor=black@0.5:"
 					+ "boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy ./creations/output.mp4;rm \"./creations/" + _creationName + ".mp4\";"
-					+ "mv ./creations/output.mp4 ./creations/" + _creationName + ".mp4");
+					+ "mv ./creations/output.mp4 ./creations/" + _creationName + ".mp4;"
+							+ "echo \"" + images + "\" >> \"searchNames.txt\"");
 			Process pb3 = addTextToVideo.start();
 			int exit3 = pb3.waitFor();
 			Alert invalidSearchAlert = new Alert(Alert.AlertType.INFORMATION);
 			invalidSearchAlert.setTitle("Complete");
 			invalidSearchAlert.setContentText("Creation of merging audioFiles is successfull!!!");
+			invalidSearchAlert.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 			invalidSearchAlert.showAndWait();
 			return;
 		} catch (Exception e) {
@@ -192,6 +214,12 @@ public class AudioMergePaper implements Runnable{
 		}
 	}
 	
+	/**
+	 * However, this method is creating a new creation based on one term searched on Wikipedia by the user, rather
+	 * than merging existing audio files
+	 * @param numberOfImages
+	 * @param result2
+	 */
 	public void waveAudio(int numberOfImages, Optional<String> result2) {
 		try {
 			ProcessBuilder timeOfAudio = new ProcessBuilder("/bin/bash", "-c", "echo `soxi -D ./audioFiles/unnamedAudio.wave`");
@@ -210,24 +238,23 @@ public class AudioMergePaper implements Runnable{
 			int exit1 = pb1.waitFor();
 
 			ProcessBuilder removeAndMoveFiles = new ProcessBuilder("/bin/bash", "-c", "mv \"" + _creationName + ".mp4\" \"./creations\""
-					+ ";rm \"./audioFiles/unnamedAudio.wave\" \"output.mp4\";echo \"" + _creationName + "\" >> \"nameOfCreations.txt\"");
+					+ ";rm \"./audioFiles/unnamedAudio.wave\" \"output.mp4\";echo \"" + _creationName + "\" >> \"nameOfCreations.txt\";"
+					+ "cp \"./creations/" + _creationName + ".mp4\" \"./creationsNoText\"");
 			Process pb2 = removeAndMoveFiles.start();
 			int exit2 = pb2.waitFor();
 			
 			
 			ProcessBuilder addTextToVideo = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ./creations/" + _creationName + ".mp4 "
-					+ "-vf drawtext=\"fontfile=/path/to/font.ttf: text=\'" + _creationName + "\': fontcolor=white: fontsize=18: box=1: boxcolor=black@0.5:"
+					+ "-vf drawtext=\"fontfile=/path/to/font.ttf: text=\'" + Main.searched + "\': fontcolor=white: fontsize=18: box=1: boxcolor=black@0.5:"
 					+ "boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy ./creations/output.mp4;rm \"./creations/" + _creationName + ".mp4\";"
-					+ "mv ./creations/output.mp4 ./creations/" + _creationName + ".mp4");
+					+ "mv ./creations/output.mp4 ./creations/" + _creationName + ".mp4;"
+							+ "echo \"" + Main.searched + "\" >> \"searchNames.txt\"");
 			Process pb3 = addTextToVideo.start();
 			int exit3 = pb3.waitFor();
 			Alert invalidSearchAlert = new Alert(Alert.AlertType.INFORMATION);
 			invalidSearchAlert.setTitle("Complete");
-<<<<<<< HEAD
 			invalidSearchAlert.setContentText("Making of Creation is successfull!!!");
-=======
-			invalidSearchAlert.setContentText("Creation of merging audioFiles is successfull!!!");
->>>>>>> eea9d29aa4c59c2de8fdd7e04d931145743b612b
+			invalidSearchAlert.getDialogPane().getStylesheets().add(AudioMergePaper.class.getResource("alert.css").toExternalForm());
 			invalidSearchAlert.showAndWait();
 			return;
 		} catch (Exception e) {
